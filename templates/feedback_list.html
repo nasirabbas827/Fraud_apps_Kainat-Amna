@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}System Feedback List{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="fw-bold mb-4 text-primary">System Feedbacks</h3>
+    {% if feedbacks %}
+        <div class="list-group">
+            {% for feedback in feedbacks %}
+                <div class="list-group-item list-group-item-action shadow-sm rounded-4 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1 fw-semibold">{{ feedback.user.username }}</p>
+                            <p class="mb-1 text-muted">{{ feedback.message }}</p>
+                        </div>
+                        <div>
+                            <span class="badge rounded-pill 
+                                {% if feedback.status == 'Read' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{ feedback.status }}
+                            </span>
+                            <small class="d-block text-muted mt-1">{{ feedback.submitted_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No feedback submitted yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

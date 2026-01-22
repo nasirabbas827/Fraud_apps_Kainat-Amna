@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ application.app_name }} Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div class="row g-0">
+            <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-4">
+                {% if application.app_image %}
+                    <img src="{{ application.app_image.url }}" class="img-fluid rounded-4 shadow-sm" style="max-height: 280px;">
+                {% else %}
+                    <i class="bi bi-app-indicator display-1 text-muted"></i>
+                {% endif %}
+            </div>
+            <div class="col-md-8 p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="badge bg-primary mb-2">{{ application.category }}</span>
+                        <h1 class="fw-bold mb-1">{{ application.app_name }}</h1>
+                    </div>
+                    {% if application.fraud_status == 'fraud' %}
+                        <span class="badge bg-danger p-2 px-3"><i class="bi bi-exclamation-triangle"></i> Fraudulent</span>
+                    {% else %}
+                        <span class="badge bg-success p-2 px-3"><i class="bi bi-patch-check"></i> Genuine</span>
+                    {% endif %}
+                </div>
+
+                <div class="my-3 d-flex align-items-center">
+                    <span class="text-warning fs-4 me-2">
+                        <i class="bi {% if avg_rating >= 1 %}bi-star-fill{% elif avg_rating > 0 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        <i class="bi {% if avg_rating >= 2 %}bi-star-fill{% elif avg_rating > 1 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        <i class="bi {% if avg_rating >= 3 %}bi-star-fill{% elif avg_rating > 2 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        <i class="bi {% if avg_rating >= 4 %}bi-star-fill{% elif avg_rating > 3 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        <i class="bi {% if avg_rating >= 5 %}bi-star-fill{% elif avg_rating > 4 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                    </span>
+                    <span class="fw-bold fs-5">{{ avg_rating|floatformat:1 }}</span>
+                    <span class="text-muted ms-2 small">({{ reviews.count }} reviews)</span>
+                </div>
+
+                <p class="text-secondary mb-4">{{ application.description }}</p>
+
+                {% if application.app_link %}
+                <a href="{{ application.app_link }}" target="_blank" class="btn btn-primary px-4 rounded-pill">Download App</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h4 class="fw-bold mb-4">Sentiment Feedback</h4>
+            {% for review in reviews %}
+            <div class="card border-0 shadow-sm rounded-4 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold">{{ review.user.username }}</h6>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="text-warning mb-2" style="font-size: 0.8rem;">
+                        Rating: {{ review.rating }}/5
+                    </div>
+                    <p class="card-text text-dark">{{ review.comment }}</p>
+                    <div class="mt-3 pt-2 border-top">
+                        <span class="badge rounded-pill 
+                            {% if review.sentiment_label == 'Positive' %}bg-success-subtle text-success
+                            {% elif review.sentiment_label == 'Negative' %}bg-danger-subtle text-danger
+                            {% else %}bg-warning-subtle text-dark{% endif %} px-3">
+                            {{ review.sentiment_label }} ({{ review.sentiment_score }})
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="card border-0 p-5 text-center bg-light">
+                <p class="text-muted m-0">No reviews found for this app.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">AI Scorecard</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="display-6 fw-bold me-3 {% if avg_sentiment < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ avg_sentiment|floatformat:2 }}
+                        </div>
+                        <small class="  text-white">Avg Polarity </small>
+                    </div>
+                    
+                    <div class="progress" style="height: 10px; background-color: #444;">
+                        {% if avg_sentiment %}
+                            {% widthratio avg_sentiment|add:1 2 100 as width %}
+                            <div class="progress-bar {% if avg_sentiment < 0 %}bg-danger{% else %}bg-success{% endif %}" 
+                                 role="progressbar" style="width: {{ width }}%"></div>
+                        {% else %}
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 50%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Leave a Review</h5>
+                    {% if username %}
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary w-100 py-2">Submit Analysis</button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted small">Please <a href="{% url 'login' %}">login</a> to submit a review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

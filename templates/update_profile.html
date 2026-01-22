@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+                <h2 class="mb-0 fs-4">
+                    <i class="bi bi-person-lines-fill me-2"></i>Update Your Profile
+                </h2>
+            </div>
+            <div class="card-body p-4 p-md-5">
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+
+                        <!-- Profile Picture Section -->
+                        <div class="col-12 mb-4">
+                            <label class="form-label fw-semibold">Profile Picture</label>
+
+                            <!-- Show current picture if exists -->
+                            {% if form.instance.profile_picture %}
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <img src="{{ form.instance.profile_picture.url }}" 
+                                         alt="Current Profile Picture" 
+                                         class="rounded-circle shadow-sm" 
+                                         width="100" height="100" 
+                                         style="object-fit: cover;">
+                                    <div>
+                                        <p class="mb-1 small text-muted">Current picture</p>
+                                        <small class="text-primary">
+                                            <i class="bi bi-arrow-repeat me-1"></i>Upload new to replace
+                                        </small>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <!-- File input -->
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-image"></i>
+                                </span>
+                                {{ form.profile_picture }}
+                            </div>
+                            {% if form.profile_picture.help_text %}
+                                <div class="form-text">{{ form.profile_picture.help_text }}</div>
+                            {% endif %}
+                            {% if form.profile_picture.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.profile_picture.errors %}
+                                        <p class="mb-0">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Other Fields (Loop through form) -->
+                        {% for field in form %}
+                            {% if field.name != 'profile_picture' %}
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in field.errors %}
+                                                <p class="mb-0">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                            <i class="bi bi-check-circle me-2"></i>Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            
+        </div>
+    </div>
+</div>
+
+{% endblock %}
