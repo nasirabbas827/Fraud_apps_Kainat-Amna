@@ -38,9 +38,9 @@ class ApplicationAdmin(admin.ModelAdmin):
 # ===============================
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('user', 'app', 'rating', 'sentiment_label', 'sentiment_score', 'created_at')
-    search_fields = ('user__username', 'app__app_name', 'comment')
-    list_filter = ('sentiment_label', 'rating')
+    list_display = ('user', 'app', 'rating', 'sentiment_label', 'sentiment_score', 'review_type', 'ip_address', 'created_at')
+    search_fields = ('user__username', 'app__app_name', 'comment', 'ip_address')
+    list_filter = ('sentiment_label', 'rating', 'review_type')
 
 
 # ===============================

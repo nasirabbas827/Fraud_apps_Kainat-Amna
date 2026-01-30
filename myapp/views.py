@@ -7,7 +7,7 @@ from django.contrib import messages
 
 
 from nltk.corpus import sentiwordnet as swn
-
+import socket
 from .forms import (
     user_registerForm,
     LoginForm,
@@ -196,17 +196,18 @@ def get_sentiment_score(text):
     return avg_sentiment_score, sentiment_label
 
 
-# # ==============================
-# # App DETAILS + Review SUBMISSION VIEW
-# # ==============================
+# ==============================
+# App DETAILS + Review SUBMISSION VIEW
+# ==============================
 
-from django.db.models import Avg
+ 
+
 
 def app_details(request, app_id):
     application = get_object_or_404(Application, app_id=app_id)
     reviews = Review.objects.filter(app=application).order_by('-created_at')
-    
-    # Calculate Averages for this specific app
+
+    # Calculate averages
     metrics = reviews.aggregate(
         avg_rating=Avg('rating'),
         avg_sentiment=Avg('sentiment_score')
@@ -221,10 +222,33 @@ def app_details(request, app_id):
             review = form.save(commit=False)
             review.user = user
             review.app = application
-            # Your existing sentiment logic
+
+            # ----------------------------
+            # IP Address Capture
+            # ----------------------------
+            ip_address = socket.gethostbyname(socket.gethostname())
+            review.ip_address = ip_address
+
+            # ----------------------------
+            # Fake Review Detection Logic
+            # ----------------------------
+            user_review_count = Review.objects.filter(
+                user=user,
+                app=application
+            ).count()
+
+            if user_review_count >= 3:
+                review.review_type = 'Fake'
+            else:
+                review.review_type = 'Genuine'
+
+            # ----------------------------
+            # Sentiment Analysis
+            # ----------------------------
             score, label = get_sentiment_score(review.comment)
             review.sentiment_score = score
             review.sentiment_label = label
+
             review.save()
             return redirect('app_details', app_id=application.app_id)
     else:

@@ -44,12 +44,17 @@ class Application(models.Model):
         return self.app_name
 
 
+from django.db import models
+from django.utils import timezone
+
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(user_register, on_delete=models.CASCADE)
     app = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='reviews')
     rating = models.PositiveSmallIntegerField(default=1)
     comment = models.TextField()
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     sentiment_score = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True)
 
@@ -64,11 +69,21 @@ class Review(models.Model):
         default='Neutral'
     )
 
+    # New field: Fake or Genuine review
+    REVIEW_TYPE_CHOICES = [
+        ('Genuine', 'Genuine'),
+        ('Fake', 'Fake'),
+    ]
+    review_type = models.CharField(
+        max_length=10,
+        choices=REVIEW_TYPE_CHOICES,
+        default='Genuine'
+    )
+
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user.username} - {self.app.app_name}"
-
 
 from django.db import models
 from django.utils import timezone
